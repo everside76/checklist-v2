@@ -764,6 +764,21 @@ function renderOnlineHistory(){
 function renderSettings(){
   $("s-url").value = ST.settings().scriptUrl || "";
   $("s-version").textContent = CFG.APP_VERSION;
+
+  // 이미 설치해서 앱으로 실행 중이면 설치 버튼 대신 안내를 보여줍니다
+  var installed = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  var ib = $("installBtn");
+  if (ib){
+    if (installed){
+      ib.disabled = true;
+      ib.innerHTML = "✅ 이미 설치되어 있어요";
+      $("shortcutGuide").style.display = "none";
+    } else {
+      ib.disabled = false;
+      ib.innerHTML = icon("i-home") + "설치하기";
+      $("shortcutGuide").style.display = "";
+    }
+  }
   var s = CL.statusText();
   var b = $("clBadge2");
   b.className = "cl-badge " + (s.level === "ok" ? "ok" : s.level === "warn" ? "warn" : "");
@@ -822,6 +837,70 @@ function notice(msg, level){
 }
 
 /* ============================================================
+   홈 화면에 설치 · 메신저 인앱 브라우저 대응
+   ============================================================ */
+var deferredInstallPrompt = null;
+
+window.addEventListener("beforeinstallprompt", function(e){
+  e.preventDefault();
+  deferredInstallPrompt = e;                 // 브라우저가 설치를 지원하면 버튼으로 바로 띄웁니다
+});
+window.addEventListener("appinstalled", function(){
+  deferredInstallPrompt = null;
+  toast("앱을 설치했어요");
+});
+
+function installShortcut(){
+  if (deferredInstallPrompt){
+    var p = deferredInstallPrompt;
+    deferredInstallPrompt = null;
+    Promise.resolve(p.prompt()).then(function(){
+      return p.userChoice;
+    }).then(function(choice){
+      toast(choice && choice.outcome === "accepted" ? "앱을 설치했어요" : "설치가 취소됐어요");
+    }).catch(function(){
+      showInstallGuide();
+    });
+    return;
+  }
+  showInstallGuide();
+}
+function showInstallGuide(){
+  var g = $("shortcutGuide");
+  if (g){ g.style.borderColor = "var(--brand)"; g.scrollIntoView({ behavior:"smooth", block:"center" }); }
+  toast(isIOS() ? "공유 버튼 → '홈 화면에 추가'를 눌러 주세요" : "브라우저 메뉴에서 앱을 설치해 주세요");
+}
+
+function isIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent || ""); }
+function isInAppBrowser(){
+  var ua = navigator.userAgent || "";
+  return /KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|FB_IAB|Line\/|DaumApps|everytimeApp|band|wv\)/i.test(ua);
+}
+function copyAppUrl(){
+  var url = location.href;
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url)
+      .then(function(){ toast("주소를 복사했어요. Safari·Chrome 주소창에 붙여넣어 열어주세요."); })
+      .catch(function(){ toast("주소: " + url); });
+  } else { toast("주소: " + url); }
+}
+function openExternalBrowser(){
+  var ua = navigator.userAgent || "", url = location.href;
+  if (/KAKAOTALK/i.test(ua)){ location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(url); return; }
+  if (/Android/i.test(ua) && !isIOS()){
+    location.href = "intent://" + url.replace(/^https?:\/\//, "") + "#Intent;scheme=https;package=com.android.chrome;end";
+    setTimeout(copyAppUrl, 1200);            // 인텐트가 안 먹을 때를 위한 폴백
+    return;
+  }
+  copyAppUrl();                              // iOS·기타: 주소 복사 안내
+}
+function checkInAppBrowser(){
+  if (!isInAppBrowser()) return;
+  var w = $("inappWarn"); if (w) w.style.display = "block";
+  if (isIOS()){ var ios = $("inappWarnIos"); if (ios) ios.style.display = "block"; }
+}
+
+/* ============================================================
    시작
    ============================================================ */
 function boot(){
@@ -847,6 +926,9 @@ function boot(){
   $("reloadClBtn").addEventListener("click", reloadChecklist);
   $("clearCacheBtn").addEventListener("click", clearChecklistCache);
   $("openChangelog").addEventListener("click", function(){ showScreen("changelog"); });
+  $("installBtn").addEventListener("click", installShortcut);
+  $("openExternalBtn").addEventListener("click", openExternalBrowser);
+  checkInAppBrowser();
   $("r-comment").addEventListener("input", function(){ if (session){ session.comment = this.value; saveDraft(); } });
 
   var bar = document.querySelector(".appbar");

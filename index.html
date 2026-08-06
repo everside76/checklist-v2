@@ -47,6 +47,13 @@
 
   <!-- ================= 홈 ================= -->
   <section class="screen active" id="screen-home">
+    <div class="inapp-warn" id="inappWarn" style="display:none;">
+      <span class="ttl">⚠️ 메신저 안에서 열렸어요</span>
+      카카오톡 등 메신저 인앱 브라우저에서는 <b>앱 설치가 안 되고, 앱이 제대로 동작하지 않을 수 있어요.</b>
+      아래 버튼으로 <b>기본 브라우저(Chrome·Safari)</b>에서 열어주세요.
+      <button class="btn" id="openExternalBtn">기본 브라우저로 열기</button>
+      <div class="inapp-warn-ios" id="inappWarnIos" style="display:none;">아이폰은 화면 <b>오른쪽 아래(또는 위) 메뉴 → 'Safari로 열기'</b>를 눌러도 돼요.</div>
+    </div>
     <div class="hero">
       <span class="hero-eyebrow">고반식당 서비스 MOT</span>
       <h2 class="hero-title">고객을 기분 좋게</h2>
@@ -184,6 +191,23 @@
 
   <!-- ================= 설정 ================= -->
   <section class="screen" id="screen-settings">
+    <div class="card">
+      <h2 class="card-title"><span class="icon"><svg><use href="#i-home"></use></svg></span>스마트폰·PC에 설치</h2>
+      <p class="hint" style="margin-top:0;">이 점검 앱을 <b>스마트폰이나 PC에 설치</b>하면 일반 앱처럼 아이콘으로 바로 실행할 수 있습니다.</p>
+      <button class="btn" id="installBtn" style="margin-top:12px;"><span class="icon"><svg><use href="#i-home"></use></svg></span>설치하기</button>
+      <div class="hint safe-note">
+        🔒 <b>안심하고 설치하세요.</b> 이 앱은 별도의 프로그램을 내려받는 것이 아니라, <b>웹페이지를 아이콘처럼 등록</b>하는 방식입니다.
+        스마트폰·PC에 접근하거나 개인정보를 수집하지 않으며, 점검 기록은 <b>이 기기와 회사 구글 시트에만</b> 저장됩니다.
+        언제든 아이콘을 삭제하면 완전히 제거됩니다.
+      </div>
+      <div class="hint shortcut-guide" id="shortcutGuide">
+        ⚠️ <b>카카오톡·메신저로 받은 링크</b>는 먼저 <b>Chrome / Safari로 열기</b> 후 진행하세요. (메신저 인앱 브라우저는 설치가 제한됩니다)<br>
+        <b>iPhone Safari</b>: 공유 버튼 → 홈 화면에 추가<br>
+        <b>Android Chrome</b>: 오른쪽 위 메뉴 → 앱 설치<br>
+        <b>PC Chrome·Edge</b>: 주소창 오른쪽 <b>설치 아이콘</b>(⊕) 클릭<br>
+        브라우저가 자동 설치를 지원하면 위의 <b>설치하기</b> 버튼으로 바로 설치할 수 있습니다.
+      </div>
+    </div>
     <div class="card">
       <h2 class="card-title"><span class="icon"><svg><use href="#i-list"></use></svg></span>체크리스트</h2>
       <div class="cl-badge" id="clBadge2" style="margin-bottom:12px;">-</div>

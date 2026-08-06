@@ -303,6 +303,15 @@ input[type=number].no-spin::-webkit-outer-spin-button,input[type=number].no-spin
 .store-suggest .ss-item:active,.store-suggest .ss-item:hover{background:var(--bg);}
 .store-suggest .ss-sim{font-size:11px; font-weight:800; color:var(--sub); flex:0 0 auto;}
 
+/* 설치 안내 · 메신저 인앱 브라우저 경고 */
+.safe-note{margin-top:12px; padding:12px; border-radius:10px; background:var(--ok-bg); border:1px solid var(--ok); color:var(--ink);}
+.shortcut-guide{margin-top:12px; padding:12px; border-radius:10px; background:var(--bg); border:1px solid var(--line); line-height:1.7;}
+.inapp-warn{background:var(--bad-bg); border:1px solid var(--bad); border-radius:14px; padding:14px 16px; margin-bottom:14px;
+  font-size:13px; line-height:1.55; color:var(--ink); box-shadow:var(--shadow);}
+.inapp-warn .ttl{color:var(--bad); font-weight:800; font-size:14px; display:block; margin-bottom:4px;}
+.inapp-warn .btn{background:var(--bad); color:#fff; margin-top:10px; box-shadow:none;}
+.inapp-warn-ios{margin-top:10px; font-size:12px; color:var(--sub);}
+
 .check-summary{font-size:13px; color:var(--sub); text-align:center; margin:12px 0 10px;}
 .toast{position:fixed; left:50%; bottom:90px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--bg);
   padding:13px 20px; border-radius:12px; font-size:14px; font-weight:700; opacity:0; pointer-events:none; transition:.25s; z-index:100;
