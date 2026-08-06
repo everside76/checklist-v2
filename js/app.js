@@ -328,9 +328,11 @@ function critToggle(it){
 }
 function critBox(it){
   if (!it.critO && !it.critT && !it.critX) return "";
+  /* 기준이 비어 있는 판정은 줄 자체를 그리지 않습니다.
+     (상황발생시 문항처럼 미흡 판정이 없는 경우 빈 줄이 생기지 않도록) */
   function row(cls, label, txt){
-    return '<div class="crit-row '+cls+(txt?"":" empty")+'"><b>'+label+'</b><span>'
-      + (txt ? esc(txt) : "기준 없음")+'</span></div>';
+    if (!txt) return "";
+    return '<div class="crit-row '+cls+'"><b>'+label+'</b><span>'+esc(txt)+'</span></div>';
   }
   var open = critAlwaysOpen() ? " open" : "";
   return '<div class="crit-box'+open+'" id="crit-'+esc(it.no)+'">'
@@ -418,7 +420,7 @@ function rules(){ return (session && session.checklist.rules) || []; }
 function renderRules(){
   var list = rules();
   if (!list.length){
-    $("ruleList").innerHTML = '<div class="empty">등록된 10계명이 없습니다.<br>구글 시트의 <b>10계명</b> 탭을 확인해 주세요.</div>';
+    $("ruleList").innerHTML = '<div class="empty-state">등록된 10계명이 없습니다.<br>구글 시트의 <b>10계명</b> 탭을 확인해 주세요.</div>';
   } else {
     var pen = list[0].penalty === undefined ? 5 : list[0].penalty;
     $("ruleIntro").innerHTML = '발생한 항목만 켜세요. <b>체크 1건당 총점에서 '+pen+'점 추가 감점</b>되며, 세부사항을 반드시 기록해 주세요.';
@@ -680,7 +682,7 @@ function exportCsv(){
 function renderHistory(){
   var hist = ST.history();
   if (!hist.length){
-    $("histList").innerHTML = '<div class="empty"><div class="big">'+icon("i-list")+'</div>이 기기에 저장된 점검이 없어요.</div>';
+    $("histList").innerHTML = '<div class="empty-state"><div class="big">'+icon("i-list")+'</div>이 기기에 저장된 점검이 없어요.</div>';
     return;
   }
   $("histList").innerHTML = '<h2 style="font-size:14px; margin:14px 2px 10px;">📱 이 기기에 저장된 점검</h2>'
@@ -766,18 +768,18 @@ function toggleOnlineHistory(){
   if (box.style.display === "block"){ box.style.display = "none"; return; }
   box.style.display = "block";
   if (onlineCache){ renderOnlineHistory(); return; }
-  $("onlineHistItems").innerHTML = '<div class="empty">불러오는 중…</div>';
+  $("onlineHistItems").innerHTML = '<div class="empty-state">불러오는 중…</div>';
   API.fetchList().then(function(list){
     onlineCache = list; renderOnlineHistory();
   }).catch(function(err){
-    $("onlineHistItems").innerHTML = '<div class="empty">불러오지 못했어요.<br>'+esc(err.message)+'</div>';
+    $("onlineHistItems").innerHTML = '<div class="empty-state">불러오지 못했어요.<br>'+esc(err.message)+'</div>';
   });
 }
 function renderOnlineHistory(){
   var q = ($("onlineSearch").value || "").trim();
   var list = onlineCache || [];
   if (q) list = list.filter(function(r){ return String(r.store||"").indexOf(q) >= 0; });
-  if (!list.length){ $("onlineHistItems").innerHTML = '<div class="empty">기록이 없어요.</div>'; return; }
+  if (!list.length){ $("onlineHistItems").innerHTML = '<div class="empty-state">기록이 없어요.</div>'; return; }
   /* 구글 시트에 저장된 기록은 열람 전용입니다 (수정·삭제 없음) */
   $("onlineHistItems").innerHTML = list.slice(0,100).map(function(r){
     return '<div class="hist">'

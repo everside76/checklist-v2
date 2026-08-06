@@ -14,7 +14,7 @@ MOT.config = {
   RESULT_SHEET_URL:    "https://docs.google.com/spreadsheets/d/1kWdTd58LV-bxzTo3vgHoVkMm1-0s7dMgWhumOlapk9w/edit",
 
   BRAND: "고반식당",
-  APP_VERSION: "2.0.5",
+  APP_VERSION: "2.0.6",
 
   /* 등급 컷 (점수 이상이면 해당 등급) */
   GRADE_CUTS: [
@@ -51,6 +51,9 @@ MOT.LS = {
 
 /* 변경 이력 (최신이 위) */
 MOT.CHANGELOG = [
+  { v: "2.0.6", date: "2026-08-07", items: [
+    "상황발생시 문항에서 '미흡 · 기준 없음' 칸이 크게 비어 보이던 문제를 고쳤습니다 — 기준이 없는 판정은 아예 표시하지 않습니다"
+  ]},
   { v: "2.0.5", date: "2026-08-07", items: [
     "판정 기준이 문항마다 항상 펼쳐진 채로 보입니다 — 이제 누르지 않아도 이행·미흡·불이행 기준을 바로 확인할 수 있어요",
     "설정에 '판정 기준을 접어 두기' 추가 — 화면을 간결하게 보고 싶을 때 켜세요"
