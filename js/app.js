@@ -516,11 +516,24 @@ function buildResult(){
     var isNa = r.naStages.indexOf(st) >= 0;
     var ratio = m.max > 0 ? m.got/m.max : 0;
     var lv = ratio >= 0.9 ? "" : (ratio >= 0.7 ? " mid" : " low");
-    var val = m.max > 0 ? m.got+" / "+m.max+"점" : (isNa ? "해당없음" : "—");
+
+    /* 점수 표기
+       - 채점 문항이 있는 단계   : 12 / 16점  (상황 감점이 함께 있으면 옆에 −4)
+       - 상황발생시 문항만 있는 단계 : 감점이 있으면 −4점, 없으면 —  */
+    var val, cls = "", pen = "";
+    if (m.max > 0){
+      val = m.got + " / " + m.max + "점";
+      if (m.penalty) pen = '<span class="st-pen">−' + m.penalty + '</span>';
+    } else if (m.penalty){
+      val = "−" + m.penalty + "점";  cls = " pen";
+    } else {
+      val = isNa ? "해당없음" : "—";  cls = " na";
+    }
+
     return '<div class="stage-score"><span class="st-name">'+esc(st)+'</span>'
       + '<span class="st-bar'+lv+'"><i style="width:'+Math.round(ratio*100)+'%"></i></span>'
-      + '<span class="st-val'+(m.max>0?"":" na")+'">'+val+'</span>'
-      + (m.penalty ? '<span class="st-pen">−'+m.penalty+'</span>' : "")
+      + '<span class="st-val'+cls+'">'+val+'</span>'
+      + pen
       + '</div>';
   }).join("");
 

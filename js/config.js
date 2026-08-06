@@ -14,7 +14,7 @@ MOT.config = {
   RESULT_SHEET_URL:    "https://docs.google.com/spreadsheets/d/1kWdTd58LV-bxzTo3vgHoVkMm1-0s7dMgWhumOlapk9w/edit",
 
   BRAND: "고반식당",
-  APP_VERSION: "2.0.7",
+  APP_VERSION: "2.0.8",
 
   /* 등급 컷 (점수 이상이면 해당 등급) */
   GRADE_CUTS: [
@@ -51,6 +51,9 @@ MOT.LS = {
 
 /* 변경 이력 (최신이 위) */
 MOT.CHANGELOG = [
+  { v: "2.0.8", date: "2026-08-07", items: [
+    "단계별 점수에서 클레임·퇴식처럼 상황발생시 문항만 있는 단계가 '— −4'로 어색하게 보이던 것을 '−4점'으로 정리했습니다"
+  ]},
   { v: "2.0.7", date: "2026-08-07", items: [
     "결과 화면의 '처음으로' 버튼을 '저장하고 처음으로'로 바꿨습니다 — 누르면 점검이 기기에 저장된다는 점이 분명해집니다",
     "결과 화면 아래 버튼을 세로로 배치해 글자가 잘리지 않게 했습니다"

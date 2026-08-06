@@ -267,6 +267,7 @@ input[type=number].no-spin::-webkit-outer-spin-button,input[type=number].no-spin
 .stage-score .st-bar.mid i{background:linear-gradient(90deg,var(--warn),#f0b352);}
 .stage-score .st-val{flex:0 0 auto; font-size:13px; font-weight:800; min-width:64px; text-align:right;}
 .stage-score .st-val.na{color:var(--sub); font-weight:600;}
+.stage-score .st-val.pen{color:var(--situ);}
 .stage-score .st-pen{flex:0 0 auto; font-size:12px; font-weight:800; color:var(--situ);}
 
 .pen-block{margin-top:12px; padding:12px 14px; border:1px solid var(--situ-line); background:var(--situ-bg); border-radius:10px;}
