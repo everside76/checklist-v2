@@ -1,7 +1,7 @@
 {
-  "name": "고반식당 MOT 점검",
-  "short_name": "고반 MOT",
-  "description": "고반식당 서비스 MOT 체크리스트 점검 앱",
+  "name": "고반 MOT2",
+  "short_name": "고반 MOT2",
+  "description": "고반식당 서비스 MOT 체크리스트 점검 앱 (V2)",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

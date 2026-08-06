@@ -14,7 +14,7 @@ MOT.config = {
   RESULT_SHEET_URL:    "https://docs.google.com/spreadsheets/d/1kWdTd58LV-bxzTo3vgHoVkMm1-0s7dMgWhumOlapk9w/edit",
 
   BRAND: "고반식당",
-  APP_VERSION: "2.0.3",
+  APP_VERSION: "2.0.4",
 
   /* 등급 컷 (점수 이상이면 해당 등급) */
   GRADE_CUTS: [
@@ -51,6 +51,9 @@ MOT.LS = {
 
 /* 변경 이력 (최신이 위) */
 MOT.CHANGELOG = [
+  { v: "2.0.4", date: "2026-08-06", items: [
+    "앱 이름을 '고반 MOT2'로 바꿨습니다 — 홈 화면에 설치했을 때 기존 앱과 아이콘 이름으로 구분됩니다"
+  ]},
   { v: "2.0.3", date: "2026-08-06", items: [
     "점검 이력 카드를 한눈에 보이게 바꿨어요 — 점수를 등급 색 배지로 크게 표시하고, 브랜드·대상·홀 인원·제외 단계·미흡/불이행 개수를 함께 보여줍니다",
     "카드 아무 곳이나 누르면 결과가 열립니다",

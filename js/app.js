@@ -36,7 +36,8 @@ function toast(msg){
 }
 
 /* ---------- 화면 전환 ---------- */
-var TITLES = { home:"MOT 점검", check:"체크리스트", rules:"절대 금지 10계명",
+/* 상단바 제목 — 좁은 화면에서도 잘리지 않도록 짧게 씁니다 (화면 안에 전체 제목이 다시 나옵니다) */
+var TITLES = { home:"고반 MOT2", check:"체크리스트", rules:"10계명 점검",
                result:"점검 결과", history:"점검 이력", settings:"설정", changelog:"변경 이력" };
 
 function showScreen(id, push){
