@@ -616,7 +616,8 @@ function persistCurrent(sent){
     score:r.score, grade:r.grade, ok:r.ok, tri:r.tri, x:r.x, na:r.na,
     unanswered:r.unanswered, ruleViolations:r.ruleViolations.length, total:r.total,
     rawScore:r.normalGot, maxScore:r.normalMax, situPenalty:r.situPenalty,
-    rulePenalty:r.rulePenalty, inspectRate:Math.round(r.inspectRate*10)/10
+    rulePenalty:r.rulePenalty, inspectRate:Math.round(r.inspectRate*10)/10,
+    naStages:r.naStages.join(", "), situOccurred:r.situOccurred
   };
   session.savedAt = new Date().toISOString();
   if (sent){ session.sent = true; session.sentAt = new Date().toISOString(); }
@@ -677,23 +678,44 @@ function renderHistory(){
     return;
   }
   $("histList").innerHTML = '<h2 style="font-size:14px; margin:14px 2px 10px;">📱 이 기기에 저장된 점검</h2>'
-    + hist.map(function(h){
-    var res = h.result || {};
-    return '<div class="hist">'
-      + '<div class="hist-top"><span class="hist-store">'+esc(h.store)+'</span>'
-      + '<span class="badge '+(h.sent?"sent":"unsent")+'">'+(h.sent?"전송됨":"미전송")+'</span></div>'
-      + '<div class="hist-meta">'+esc(h.date)+' ('+esc(h.weekday)+') '+esc(h.time||"")
-      + ' · 피점검자 '+esc(h.target||"-")+' · 점검자 '+esc(h.inspector||"-")+'</div>'
-      + '<div class="hist-meta" style="margin-top:4px;">총점 <b style="color:var(--brand)">'+(res.score!==undefined?res.score:"-")+'</b>점'
-      + ' · 등급 <b>'+(res.grade||"-")+'</b>'
-      + (res.ruleViolations?' · 🚫 '+res.ruleViolations+'건':"")+'</div>'
-      + '<div class="hist-actions">'
-      + '<button class="btn secondary" onclick="MOTapp.viewHistory(\''+h.id+'\')">'+icon("i-result")+'결과 보기</button>'
-      + (h.sent ? "" : '<button class="btn secondary" onclick="MOTapp.editHistory(\''+h.id+'\')">'+icon("i-note")+'수정하기</button>'
-                     + '<button class="btn secondary" onclick="MOTapp.resendHistory(\''+h.id+'\')">'+icon("i-refresh")+'재전송</button>')
-      + '<button class="btn secondary" onclick="MOTapp.deleteHistory(\''+h.id+'\')">삭제</button>'
-      + '</div></div>';
-  }).join("");
+    + hist.map(function(h){ return histCard(h); }).join("");
+}
+
+/* 이력 카드 — 점수를 등급 색 배지로 크게 보여주고, 제외 단계와 판정 개수를 함께 표시 */
+function histCard(h){
+  var r = h.result || {};
+  var id = jsArg(h.id);
+  var meta = esc(h.date) + " (" + esc(h.weekday) + ")" + (h.time ? " " + esc(h.time) : "")
+    + (h.target ? " · 대상 " + esc(h.target) : "")
+    + " · 점검 " + esc(h.inspector || "-")
+    + (h.staff !== undefined && h.staff !== "" ? " · 홀 " + esc(h.staff) + "명" : "");
+
+  var excluded = r.naStages ? '제외 단계(해당없음): ' + esc(r.naStages)
+               : (r.na ? '해당없음 ' + r.na + '건 제외' : "");
+
+  var counts = "△" + (r.tri || 0) + " ✕" + (r.x || 0)
+    + (r.unanswered ? " ?" + r.unanswered : "")
+    + (r.situOccurred ? " ⚡" + r.situOccurred : "")
+    + " 위반 " + (r.ruleViolations || 0);
+
+  return '<div class="hist" onclick="MOTapp.viewHistory(\''+id+'\')" style="cursor:pointer;">'
+    + '<div class="hist-top">'
+    +   '<span class="hist-store"><span class="badge brand">'+esc(h.brand || CFG.BRAND)+'</span> '+esc(h.store)+'</span>'
+    +   '<span class="badge '+(h.sent?"sent":"unsent")+'">'+(h.sent?"전송됨":"미전송")+'</span>'
+    + '</div>'
+    + '<div class="hist-meta">'+meta+'</div>'
+    + (excluded ? '<div class="hist-meta" style="margin-top:3px;">'+excluded+'</div>' : "")
+    + '<div class="hist-score-row">'
+    +   '<span class="grade grade-'+(r.grade || "C")+' hist-score">'+(r.score !== undefined ? r.score : "-")+'점 · '+(r.grade || "-")+'</span>'
+    +   '<span class="hist-meta">'+counts+'</span>'
+    + '</div>'
+    /* 전송된 점검은 기록 보존을 위해 수정·삭제할 수 없습니다 (결과 보기만 가능) */
+    + '<div class="hist-actions" onclick="event.stopPropagation();">'
+    +   '<button class="btn secondary" onclick="MOTapp.viewHistory(\''+id+'\')">'+icon("i-result")+'결과 보기</button>'
+    +   (h.sent ? "" : '<button class="btn secondary" onclick="MOTapp.editHistory(\''+id+'\')">'+icon("i-note")+'수정하기</button>'
+                     + '<button class="btn secondary" onclick="MOTapp.resendHistory(\''+id+'\')">'+icon("i-refresh")+'재전송</button>'
+                     + '<button class="btn secondary" onclick="MOTapp.deleteHistory(\''+id+'\')">삭제</button>')
+    + '</div></div>';
 }
 
 function viewHistory(id){
@@ -726,7 +748,10 @@ function resendHistory(id){
   toast("결과 화면에서 전송 버튼을 눌러 주세요");
 }
 function deleteHistory(id){
-  if (!confirm("이 점검 기록을 삭제할까요?")) return;
+  var h = ST.findHistory(id);
+  if (!h) return;
+  if (h.sent){ toast("이미 전송된 점검은 삭제할 수 없어요"); return; }   // 기록 보존
+  if (!confirm("이 점검 기록을 삭제할까요? 아직 전송하지 않았으므로 되돌릴 수 없습니다.")) return;
   ST.removeHistory(id); renderHistory(); toast("삭제했어요");
 }
 
@@ -747,14 +772,25 @@ function renderOnlineHistory(){
   var list = onlineCache || [];
   if (q) list = list.filter(function(r){ return String(r.store||"").indexOf(q) >= 0; });
   if (!list.length){ $("onlineHistItems").innerHTML = '<div class="empty">기록이 없어요.</div>'; return; }
+  /* 구글 시트에 저장된 기록은 열람 전용입니다 (수정·삭제 없음) */
   $("onlineHistItems").innerHTML = list.slice(0,100).map(function(r){
-    return '<div class="hist"><div class="hist-top"><span class="hist-store">'+esc(r.store)+'</span>'
-      + '<span class="badge brand">'+esc(r.clVersion||"")+'</span></div>'
-      + '<div class="hist-meta">'+esc(r.date)+' ('+esc(r.weekday||"")+') '+esc(r.time||"")
-      + ' · 점검자 '+esc(r.inspector||"-")+'</div>'
-      + '<div class="hist-meta" style="margin-top:4px;">총점 <b style="color:var(--brand)">'+(r.score!==undefined?r.score:"-")+'</b>점'
-      + ' · 등급 <b>'+esc(r.grade||"-")+'</b>'
-      + (r.inspectRate!==undefined && r.inspectRate!=="" ? ' · 점검율 '+fmtRate(r.inspectRate)+'%' : "")+'</div></div>';
+    return '<div class="hist">'
+      + '<div class="hist-top">'
+      +   '<span class="hist-store"><span class="badge brand">'+esc(r.brand||CFG.BRAND)+'</span> '+esc(r.store)+'</span>'
+      +   '<span class="badge sent">시트 저장됨</span>'
+      + '</div>'
+      + '<div class="hist-meta">'+esc(r.date)+' ('+esc(r.weekday||"")+')'+(r.time?' '+esc(r.time):"")
+      +   (r.target?' · 대상 '+esc(r.target):"")
+      +   ' · 점검 '+esc(r.inspector||"-")
+      +   (r.staff!==undefined && r.staff!=="" ? ' · 홀 '+esc(r.staff)+'명' : "")+'</div>'
+      + '<div class="hist-score-row">'
+      +   '<span class="grade grade-'+(r.grade||"C")+' hist-score">'+(r.score!==undefined?r.score:"-")+'점 · '+esc(r.grade||"-")+'</span>'
+      +   '<span class="hist-meta">'
+      +     (r.inspectRate!==undefined && r.inspectRate!=="" ? '점검율 '+fmtRate(r.inspectRate)+'%' : "")
+      +     (r.ruleViolations ? ' · 위반 '+r.ruleViolations : "")
+      +     (r.clVersion ? ' · '+esc(r.clVersion) : "")
+      +   '</span>'
+      + '</div></div>';
   }).join("");
 }
 
