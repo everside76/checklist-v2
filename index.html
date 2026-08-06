@@ -15,7 +15,7 @@
 <!-- ?v= 는 브라우저 캐시를 갱신하기 위한 표시입니다.
      ⚠️ 코드를 고쳐 배포할 때마다 아래 모든 v 값을 새 버전으로 함께 바꿔 주세요.
         (바꾸지 않으면 직원 휴대폰이 예전 파일을 계속 쓸 수 있습니다) -->
-<link rel="stylesheet" href="css/app.css?v=2.0.4" />
+<link rel="stylesheet" href="css/app.css?v=2.0.5" />
 </head>
 <body>
 
@@ -212,6 +212,14 @@
       </div>
     </div>
     <div class="card">
+      <h2 class="card-title"><span class="icon"><svg><use href="#i-note"></use></svg></span>점검 화면</h2>
+      <label class="switch-row">
+        <input type="checkbox" id="s-critFold" />
+        <span><b>판정 기준을 접어 두기</b><br>
+          <span class="hint" style="margin:0;">끄면 문항마다 이행·미흡·불이행 기준이 항상 펼쳐진 채로 보입니다. (기본: 펼침)</span></span>
+      </label>
+    </div>
+    <div class="card">
       <h2 class="card-title"><span class="icon"><svg><use href="#i-list"></use></svg></span>체크리스트</h2>
       <div class="cl-badge" id="clBadge2" style="margin-bottom:12px;">-</div>
       <button class="btn secondary btn-sm" id="reloadClBtn"><span class="icon"><svg><use href="#i-refresh"></use></svg></span>구글 시트에서 다시 불러오기</button>
@@ -247,12 +255,12 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/config.js?v=2.0.4"></script>
-<script src="js/checklist-seed.js?v=2.0.4"></script>
-<script src="js/storage.js?v=2.0.4"></script>
-<script src="js/api.js?v=2.0.4"></script>
-<script src="js/scoring.js?v=2.0.4"></script>
-<script src="js/checklist-loader.js?v=2.0.4"></script>
-<script src="js/app.js?v=2.0.4"></script>
+<script src="js/config.js?v=2.0.5"></script>
+<script src="js/checklist-seed.js?v=2.0.5"></script>
+<script src="js/storage.js?v=2.0.5"></script>
+<script src="js/api.js?v=2.0.5"></script>
+<script src="js/scoring.js?v=2.0.5"></script>
+<script src="js/checklist-loader.js?v=2.0.5"></script>
+<script src="js/app.js?v=2.0.5"></script>
 </body>
 </html>

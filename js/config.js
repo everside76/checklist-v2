@@ -14,7 +14,7 @@ MOT.config = {
   RESULT_SHEET_URL:    "https://docs.google.com/spreadsheets/d/1kWdTd58LV-bxzTo3vgHoVkMm1-0s7dMgWhumOlapk9w/edit",
 
   BRAND: "고반식당",
-  APP_VERSION: "2.0.4",
+  APP_VERSION: "2.0.5",
 
   /* 등급 컷 (점수 이상이면 해당 등급) */
   GRADE_CUTS: [
@@ -51,6 +51,10 @@ MOT.LS = {
 
 /* 변경 이력 (최신이 위) */
 MOT.CHANGELOG = [
+  { v: "2.0.5", date: "2026-08-07", items: [
+    "판정 기준이 문항마다 항상 펼쳐진 채로 보입니다 — 이제 누르지 않아도 이행·미흡·불이행 기준을 바로 확인할 수 있어요",
+    "설정에 '판정 기준을 접어 두기' 추가 — 화면을 간결하게 보고 싶을 때 켜세요"
+  ]},
   { v: "2.0.4", date: "2026-08-06", items: [
     "앱 이름을 '고반 MOT2'로 바꿨습니다 — 홈 화면에 설치했을 때 기존 앱과 아이콘 이름으로 구분됩니다"
   ]},

@@ -318,9 +318,13 @@ function ansBtn(no, val, sym, label, pt, cur){
 }
 function num(v){ var n=Number(v); return isNaN(n)?0:n; }
 
+/* 판정 기준은 기본으로 펼쳐 둡니다. 설정에서 끄면 접힌 상태로 시작합니다. */
+function critAlwaysOpen(){ return ST.settings().critFold !== true; }
+
 function critToggle(it){
   if (!it.critO && !it.critT && !it.critX) return "";
-  return '<button class="crit-toggle" onclick="MOTapp.toggleCrit(\''+jsArg(it.no)+'\')">📖 판정 기준</button>';
+  var label = critAlwaysOpen() ? "📖 판정 기준 접기" : "📖 판정 기준";
+  return '<button class="crit-toggle" onclick="MOTapp.toggleCrit(\''+jsArg(it.no)+'\')">'+label+'</button>';
 }
 function critBox(it){
   if (!it.critO && !it.critT && !it.critX) return "";
@@ -328,7 +332,7 @@ function critBox(it){
     return '<div class="crit-row '+cls+(txt?"":" empty")+'"><b>'+label+'</b><span>'
       + (txt ? esc(txt) : "기준 없음")+'</span></div>';
   }
-  var open = ST.settings().alwaysCrit ? " open" : "";
+  var open = critAlwaysOpen() ? " open" : "";
   return '<div class="crit-box'+open+'" id="crit-'+esc(it.no)+'">'
     + row("o","○ 이행", it.critO) + row("t","△ 미흡", it.critT) + row("x","✕ 불이행", it.critX)
     + '</div>';
@@ -363,7 +367,8 @@ function rerenderCard(no){
   var critOpen = $("crit-"+no) && $("crit-"+no).classList.contains("open");
   var noteOpen = $("note-"+no) && $("note-"+no).classList.contains("open");
   el.outerHTML = itemCard(it);
-  if (critOpen && $("crit-"+no)) $("crit-"+no).classList.add("open");
+  // 다시 그려도 사용자가 직접 접거나 편 상태를 그대로 둡니다
+  if ($("crit-"+no)) $("crit-"+no).classList.toggle("open", critOpen);
   if (noteOpen && $("note-"+no)) $("note-"+no).classList.add("open");
 }
 
@@ -800,6 +805,7 @@ function renderOnlineHistory(){
    ============================================================ */
 function renderSettings(){
   $("s-url").value = ST.settings().scriptUrl || "";
+  $("s-critFold").checked = ST.settings().critFold === true;
   $("s-version").textContent = CFG.APP_VERSION;
 
   // 이미 설치해서 앱으로 실행 중이면 설치 버튼 대신 안내를 보여줍니다
@@ -968,6 +974,11 @@ function boot(){
   $("finishBtn").addEventListener("click", finishToHome);
   $("onlineHistBtn").addEventListener("click", toggleOnlineHistory);
   $("onlineSearch").addEventListener("input", renderOnlineHistory);
+  $("s-critFold").addEventListener("change", function(){
+    var s = ST.settings(); s.critFold = this.checked; ST.saveSettings(s);
+    if (session && $("screen-check")) renderCheck();      // 점검 중이면 즉시 반영
+    toast(this.checked ? "판정 기준을 접어 둡니다" : "판정 기준을 항상 펼쳐 둡니다");
+  });
   $("saveUrlBtn").addEventListener("click", saveUrl);
   $("testUrlBtn").addEventListener("click", testUrl);
   $("reloadClBtn").addEventListener("click", reloadChecklist);
