@@ -14,7 +14,7 @@ MOT.config = {
   RESULT_SHEET_URL:    "https://docs.google.com/spreadsheets/d/1kWdTd58LV-bxzTo3vgHoVkMm1-0s7dMgWhumOlapk9w/edit",
 
   BRAND: "고반식당",
-  APP_VERSION: "2.0.6",
+  APP_VERSION: "2.0.7",
 
   /* 등급 컷 (점수 이상이면 해당 등급) */
   GRADE_CUTS: [
@@ -51,6 +51,10 @@ MOT.LS = {
 
 /* 변경 이력 (최신이 위) */
 MOT.CHANGELOG = [
+  { v: "2.0.7", date: "2026-08-07", items: [
+    "결과 화면의 '처음으로' 버튼을 '저장하고 처음으로'로 바꿨습니다 — 누르면 점검이 기기에 저장된다는 점이 분명해집니다",
+    "결과 화면 아래 버튼을 세로로 배치해 글자가 잘리지 않게 했습니다"
+  ]},
   { v: "2.0.6", date: "2026-08-07", items: [
     "상황발생시 문항에서 '미흡 · 기준 없음' 칸이 크게 비어 보이던 문제를 고쳤습니다 — 기준이 없는 판정은 아예 표시하지 않습니다"
   ]},

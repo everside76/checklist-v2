@@ -558,7 +558,7 @@ function buildResult(){
   var sb = $("sendBtn");
   if (session.sent){
     sb.disabled = true; sb.textContent = "✅ 전송 완료";
-    $("sendHint").innerHTML = "이미 전송된 점검이에요. <b>처음으로</b>를 눌러 새 점검을 시작하세요.";
+    $("sendHint").innerHTML = "이미 전송된 점검이에요. <b>저장하고 처음으로</b>를 눌러 새 점검을 시작하세요.";
   } else {
     sb.disabled = false; sb.innerHTML = icon("i-send")+"구글 시트로 결과 전송";
     $("sendHint").textContent = "";
@@ -605,7 +605,7 @@ function sendToSheet(){
   API.send(buildPayload()).then(function(res){
     persistCurrent(true); ST.clearDraft();
     btn.textContent = res.duplicated ? "✅ 이미 전송됨" : "✅ 전송 완료";
-    $("sendHint").innerHTML = "구글 시트에 저장됐어요. <b>처음으로</b>를 눌러 새 점검을 시작하세요.";
+    $("sendHint").innerHTML = "구글 시트에 저장됐어요. <b>저장하고 처음으로</b>를 눌러 새 점검을 시작하세요.";
     onlineCache = null;
     toast("구글 시트로 전송 완료!");
   }).catch(function(err){
