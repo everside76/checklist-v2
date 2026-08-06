@@ -805,6 +805,16 @@ function reloadChecklist(){
   toast("구글 시트에서 불러오는 중…");
   CL.refresh(false, notice).then(function(){ renderSettings(); renderHomeBadge(); });
 }
+/* 앱 파일을 새로 내려받아 다시 시작합니다.
+   (브라우저가 예전 화면·코드를 들고 있을 때 쓰는 탈출구) */
+function updateApp(){
+  var draft = ST.draft();
+  if (draft && !confirm("작성 중인 점검이 있어요. 저장된 상태로 두고 앱을 새로 받을까요?")) return;
+  toast("앱을 새로 받는 중…");
+  var base = location.href.split("?")[0].split("#")[0];
+  setTimeout(function(){ location.replace(base + "?r=" + Date.now()); }, 400);
+}
+
 function clearChecklistCache(){
   ST.clearChecklistCache();
   toast("저장된 사본을 지웠어요. 다시 불러옵니다.");
@@ -927,6 +937,7 @@ function boot(){
   $("clearCacheBtn").addEventListener("click", clearChecklistCache);
   $("openChangelog").addEventListener("click", function(){ showScreen("changelog"); });
   $("installBtn").addEventListener("click", installShortcut);
+  $("updateAppBtn").addEventListener("click", updateApp);
   $("openExternalBtn").addEventListener("click", openExternalBrowser);
   checkInAppBrowser();
   $("r-comment").addEventListener("input", function(){ if (session){ session.comment = this.value; saveDraft(); } });

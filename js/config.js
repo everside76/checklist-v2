@@ -14,7 +14,7 @@ MOT.config = {
   RESULT_SHEET_URL:    "https://docs.google.com/spreadsheets/d/1kWdTd58LV-bxzTo3vgHoVkMm1-0s7dMgWhumOlapk9w/edit",
 
   BRAND: "고반식당",
-  APP_VERSION: "2.0.1",
+  APP_VERSION: "2.0.2",
 
   /* 등급 컷 (점수 이상이면 해당 등급) */
   GRADE_CUTS: [
@@ -51,6 +51,10 @@ MOT.LS = {
 
 /* 변경 이력 (최신이 위) */
 MOT.CHANGELOG = [
+  { v: "2.0.2", date: "2026-08-06", items: [
+    "앱을 새로 배포해도 휴대폰이 예전 화면을 계속 보여주던 문제를 고쳤습니다",
+    "설정에 '앱 최신 버전 받기' 추가 — 화면이 예전 그대로일 때 누르면 앱을 새로 내려받습니다"
+  ]},
   { v: "2.0.1", date: "2026-08-06", items: [
     "설정에 '스마트폰·PC에 설치' 추가 — 버튼 한 번으로 홈 화면에 아이콘을 만들 수 있어요 (V1에 있던 기능 복원)",
     "카카오톡 등 메신저 안에서 앱을 열면 안내 배너가 뜹니다 — '기본 브라우저로 열기' 버튼으로 Chrome·Safari에서 다시 열 수 있어요",

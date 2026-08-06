@@ -73,6 +73,21 @@
 | `google-apps-script-v2.gs` | 구글 시트에 붙이는 스크립트 |
 | `test/scoring.test.html` | 채점 엔진 자가 테스트 (브라우저로 열면 실행) |
 
+## ⚠️ 코드를 고쳐 배포할 때
+
+`index.html` 안의 `?v=` 값을 **모두 새 버전으로 바꿔서** 커밋하세요.
+
+```html
+<link rel="stylesheet" href="css/app.css?v=2.0.2" />
+...
+<script src="js/config.js?v=2.0.2"></script>
+```
+
+이 값을 바꾸지 않으면 브라우저가 예전 `js`·`css`를 계속 써서, 화면만 새것이고 코드는 옛것인 상태가 됩니다.
+`js/config.js`의 `APP_VERSION`과 같은 값으로 맞춰 두면 헷갈리지 않습니다.
+
+사용자 쪽에서 화면이 갱신되지 않으면 앱 **⚙️ 설정 → 앱 최신 버전 받기** 를 누르면 됩니다.
+
 ## 시작하기
 
 설치와 연동은 [사용설명서_V2.md](사용설명서_V2.md)를 참고하세요.
