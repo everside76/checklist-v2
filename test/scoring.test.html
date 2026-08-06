@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>채점 엔진 테스트 — 고반식당 MOT V2</title>
+<style>
+  body{font-family:-apple-system,"Malgun Gothic",sans-serif; margin:0; padding:20px; background:#f5f6f8; color:#17191f; font-size:14px;}
+  h1{font-size:19px; margin:0 0 6px;} .sub{color:#667085; font-size:13px; margin:0 0 18px;}
+  .sum{padding:14px 16px; border-radius:10px; font-weight:800; margin-bottom:16px; font-size:15px;}
+  .sum.pass{background:#eefaf2; color:#138a3d; border:1px solid #138a3d;}
+  .sum.fail{background:#fff0f0; color:#d32222; border:1px solid #d32222;}
+  table{border-collapse:collapse; width:100%; background:#fff; border:1px solid #e6e8ed; border-radius:8px; overflow:hidden;}
+  th,td{padding:9px 11px; text-align:left; border-bottom:1px solid #eef0f3; font-size:13px; vertical-align:top;}
+  th{background:#fafbfc; font-size:12px; color:#667085;}
+  tr:last-child td{border-bottom:none;}
+  .ok{color:#138a3d; font-weight:800;} .ng{color:#d32222; font-weight:800;}
+  td.exp,td.got{font-family:ui-monospace,Consolas,monospace; font-size:12.5px;}
+  tr.bad{background:#fff7f7;}
+</style>
+</head>
+<body>
+<h1>채점 엔진 테스트</h1>
+<p class="sub">scoring.js 를 직접 호출해 결과를 검증합니다. 이 파일을 브라우저로 열기만 하면 됩니다.</p>
+<div class="sum" id="sum">실행 중…</div>
+<table><thead><tr><th style="width:34%">테스트</th><th style="width:12%">결과</th><th>기대값</th><th>실제값</th></tr></thead>
+<tbody id="rows"></tbody></table>
+
+<script src="../js/config.js"></script>
+<script src="../js/checklist-seed.js"></script>
+<script src="../js/scoring.js"></script>
+<script>
+var CL = MOT.seed, S = MOT.scoring, CFG = MOT.config;
+var results = [];
+
+function check(name, expected, actual){
+  var exp = JSON.stringify(expected), got = JSON.stringify(actual);
+  results.push({ name:name, pass: exp === got, exp:exp, got:got });
+}
+
+/* 응답 만들기 도우미 */
+function answersAll(value){                       // 일반 문항 전체를 같은 값으로
+  var a = {};
+  CL.items.forEach(function(it){ if (!S.isSituational(it)) a[it.no] = { value:value }; });
+  return a;
+}
+function situAll(value){                          // 상황 문항 전체 발생 + 판정
+  var a = {};
+  CL.items.forEach(function(it){ if (S.isSituational(it)) a[it.no] = { occurred:true, value:value }; });
+  return a;
+}
+function merge(){
+  var out = {};
+  for (var i=0;i<arguments.length;i++) for (var k in arguments[i]) out[k] = arguments[i][k];
+  return out;
+}
+function run(answers, ruleState){ return S.compute(CL, answers, ruleState || {}, CFG); }
+
+/* ---------- 체크리스트 자체 검증 ---------- */
+var normals = CL.items.filter(function(i){ return !S.isSituational(i); });
+var situs   = CL.items.filter(S.isSituational);
+check("문항 수 = 30", 30, CL.items.length);
+check("일반 문항 = 24개", 24, normals.length);
+check("상황발생시 문항 = 6개", 6, situs.length);
+check("일반 문항 이행점수 합계 = 100", 100, normals.reduce(function(s,i){ return s+i.scoreO; }, 0));
+check("매장공통 문항 = 3개", 3, CL.items.filter(function(i){ return i.who === "매장공통"; }).length);
+check("상황 문항 감점 합계 = 20", 20, situs.reduce(function(s,i){ return s+Math.abs(i.scoreX); }, 0));
+
+/* ---------- 기본 채점 ---------- */
+var rAllOk = run(answersAll("O"));
+check("전부 이행 → 100점", 100, rAllOk.score);
+check("전부 이행 → 등급 S", "S", rAllOk.grade);
+check("전부 이행 → 획득 100 / 만점 100", [100,100], [rAllOk.normalGot, rAllOk.normalMax]);
+check("전부 이행 → 점검율 100%", 100, Math.round(rAllOk.inspectRate));
+check("전부 이행 → 이행 24건", 24, rAllOk.ok);
+
+var rAllT = run(answersAll("T"));
+check("전부 미흡 → 50점", 50, rAllT.score);
+check("전부 미흡 → 등급 D", "D", rAllT.grade);
+
+var rAllX = run(answersAll("X"));
+check("전부 불이행 → 0점", 0, rAllX.score);
+check("전부 불이행 → 등급 F", "F", rAllX.grade);
+
+/* ---------- 해당없음 환산 ---------- */
+var naOne = answersAll("O"); naOne["1"] = { value:"N" };        // 1번(6점) 제외
+var rNa = run(naOne);
+check("1번(6점) 해당없음 → 만점 94", 94, rNa.normalMax);
+check("1번 해당없음 + 나머지 이행 → 100점", 100, rNa.score);
+check("해당없음 1건 카운트", 1, rNa.na);
+check("점검율 23/24 = 95.8%", 95.8, Math.round(rNa.inspectRate*10)/10);
+
+var naMix = answersAll("O"); naMix["1"] = { value:"N" }; naMix["2"] = { value:"X" };
+var rNaMix = run(naMix);
+check("1번 제외 + 2번(4점) 불이행 → 90/94 = 96점", 96, rNaMix.score);
+
+/* ---------- 상황발생시 문항 ---------- */
+var rSituNone = run(answersAll("O"));
+check("상황 미발생 → 감점 0", 0, rSituNone.situPenalty);
+check("상황 미발생 → 발생 0건", 0, rSituNone.situOccurred);
+check("상황 미발생 → 미발생 6건", 6, rSituNone.situNotOccurred);
+
+var rSituOk = run(merge(answersAll("O"), situAll("O")));
+check("상황 발생 + 전부 이행 → 감점 0, 100점", [0,100], [rSituOk.situPenalty, rSituOk.score]);
+check("상황 발생 6건 카운트", 6, rSituOk.situOccurred);
+
+var rSituX = run(merge(answersAll("O"), situAll("X")));
+check("상황 전부 불이행 → 감점 20, 80점", [20,80], [rSituX.situPenalty, rSituX.score]);
+check("상황 전부 불이행 → 등급 A", "A", rSituX.grade);
+
+var situOne = merge(answersAll("O"), {});
+situOne["7"] = { occurred:true, value:"X" };                     // 7번 −4
+var rSituOne = run(situOne);
+check("7번만 불이행 → 감점 4, 96점", [4,96], [rSituOne.situPenalty, rSituOne.score]);
+
+var situT = merge(answersAll("O"), {});
+situT["3"] = { occurred:true, value:"T" };                       // 상황 문항 미흡 = 0점
+check("상황 문항 미흡 → 감점 없음", 0, run(situT).situPenalty);
+
+/* ---------- 10계명 ---------- */
+var rRule1 = run(answersAll("O"), { "01": { occurred:true } });
+check("10계명 1건 → −5점, 95점", [5,95], [rRule1.rulePenalty, rRule1.score]);
+var rRule3 = run(answersAll("O"), { "01":{occurred:true}, "05":{occurred:true}, "10":{occurred:true} });
+check("10계명 3건 → −15점, 85점", [15,85], [rRule3.rulePenalty, rRule3.score]);
+
+/* ---------- 하한 0점 ---------- */
+var rFloor = run(merge(answersAll("X"), situAll("X")),
+  { "01":{occurred:true}, "02":{occurred:true} });
+check("전부 불이행 + 상황 + 10계명 → 0점 미만 없음", 0, rFloor.score);
+
+/* ---------- 점검율 · 등급 상한 ---------- */
+function naCount(n){                                            // 앞에서 n개를 해당없음으로
+  var a = answersAll("O"), c = 0;
+  CL.items.forEach(function(it){
+    if (!S.isSituational(it) && c < n){ a[it.no] = { value:"N" }; c++; }
+  });
+  return a;
+}
+var r5na = run(naCount(5));                                     // 19/24 = 79.2% → 상한 A
+check("해당없음 5건 → 점검율 79.2%", 79.2, Math.round(r5na.inspectRate*10)/10);
+check("점검율 79.2% → 등급 상한 A 적용", ["A","S","A"], [r5na.grade, r5na.gradeBeforeCap, r5na.gradeCap]);
+
+var r4na = run(naCount(4));                                     // 20/24 = 83.3% → 상한 없음
+check("해당없음 4건 → 점검율 83.3%, 상한 없음", [83.3, "S", null], [Math.round(r4na.inspectRate*10)/10, r4na.grade, r4na.gradeCap]);
+
+var r10na = run(naCount(10));                                   // 14/24 = 58.3% → 상한 B
+check("해당없음 10건 → 상한 B", ["B", "B"], [r10na.grade, r10na.gradeCap]);
+
+var r13na = run(naCount(13));                                   // 11/24 = 45.8% → 상한 C + 재점검
+check("해당없음 13건 → 상한 C + 재점검 대상", ["C", true], [r13na.grade, r13na.needsRecheck]);
+
+/* 상한은 등급을 올리지 않는다 — 상한이 실제로 걸린 상태에서 검증 */
+var lowScore = answersAll("X"); ["1","2","5","6"].forEach(function(n){ lowScore[n] = { value:"O" }; });
+var rLow = run(lowScore);
+check("점수 F + 점검율 100% → 상한 없음, F 유지", ["F", null], [rLow.grade, rLow.gradeCap]);
+
+var lowCapped = naCount(13);                                    // 상한 C가 걸리는 점검율
+CL.items.forEach(function(it){                                   // 남은 문항을 전부 불이행 → 점수 F
+  if (!S.isSituational(it) && lowCapped[it.no].value !== "N") lowCapped[it.no] = { value:"X" };
+});
+var rLowCap = run(lowCapped);
+check("점수 F + 상한 C → 상한이 등급을 올리지 않고 F 유지", ["F","F","C"],
+      [rLowCap.grade, rLowCap.gradeBeforeCap, rLowCap.gradeCap]);
+
+/* ---------- 시트 값이 이상할 때 ---------- */
+function customCL(items){ return { items:items, rules:[], stages:["입점"] }; }
+
+var strCL = customCL([
+  { no:"1", stage:"입점", kind:"일반", who:"개인", text:"t", scoreO:"60", scoreT:"30", scoreX:"0" },
+  { no:"2", stage:"입점", kind:"일반", who:"개인", text:"t", scoreO:"40", scoreT:"20", scoreX:"0" }
+]);
+check("점수가 문자열이어도 계산됨 (전부 이행 → 100)", 100, S.compute(strCL, {"1":{value:"O"},"2":{value:"O"}}, {}, CFG).score);
+check("점수가 문자열일 때 미흡 → 50", 50, S.compute(strCL, {"1":{value:"T"},"2":{value:"T"}}, {}, CFG).score);
+
+var blankKindCL = customCL([
+  { no:"1", stage:"입점", kind:"", who:"개인", text:"t", scoreO:100, scoreT:50, scoreX:0 }
+]);
+check("일반구분이 비어 있으면 일반 문항으로 취급", 100, S.compute(blankKindCL, {"1":{value:"O"}}, {}, CFG).score);
+
+var blankScoreCL = customCL([
+  { no:"1", stage:"입점", kind:"일반", who:"개인", text:"t", scoreO:"", scoreT:"", scoreX:"" },
+  { no:"2", stage:"입점", kind:"일반", who:"개인", text:"t", scoreO:100, scoreT:50, scoreX:0 }
+]);
+check("배점이 비어 있는 문항은 만점에 더해지지 않음", [100,100],
+  (function(){ var r = S.compute(blankScoreCL, {"1":{value:"O"},"2":{value:"O"}}, {}, CFG); return [r.normalMax, r.score]; })());
+
+var situT = customCL([
+  { no:"1", stage:"입점", kind:"일반", who:"개인", text:"t", scoreO:100, scoreT:50, scoreX:0 },
+  { no:"2", stage:"입점", kind:"상황발생시", who:"개인", text:"t", scoreO:0, scoreT:-3, scoreX:-6 }
+]);
+check("상황 문항 미흡 점수가 음수면 그만큼 감점", 97,
+  S.compute(situT, {"1":{value:"O"}, "2":{occurred:true, value:"T"}}, {}, CFG).score);
+check("상황 문항 불이행 감점", 94,
+  S.compute(situT, {"1":{value:"O"}, "2":{occurred:true, value:"X"}}, {}, CFG).score);
+
+/* 체크리스트에 없는 응답은 무시 */
+var ghost = answersAll("O"); ghost["999"] = { value:"X" };
+check("체크리스트에 없는 문항 응답은 무시됨", 100, run(ghost).score);
+
+/* ---------- 개인 · 매장공통 ---------- */
+check("매장공통 만점 = 8점 (5·27번)", 8, rAllOk.commonMax);
+check("개인 만점 = 92점", 92, rAllOk.personalMax);
+var common0 = answersAll("O"); common0["5"] = { value:"X" }; common0["27"] = { value:"X" };
+check("매장공통 전부 불이행 → 매장공통 획득 0", 0, run(common0).commonGot);
+
+/* ---------- 미응답 처리 ---------- */
+var partial = {}; partial["1"] = { value:"O" };
+var rPartial = run(partial);
+check("1번만 응답 → 미응답 23건", 23, rPartial.unanswered);
+check("1번만 응답 → 100점(응답분만 환산)", 100, rPartial.score);
+check("1번만 응답 → 점검율 4.2%", 4.2, Math.round(rPartial.inspectRate*10)/10);
+check("1번만 응답 → 재점검 대상", true, rPartial.needsRecheck);
+
+/* ---------- 게이트(validate) ---------- */
+check("전부 응답 → 통과", true, S.validate(CL, answersAll("O")).ok);
+check("미응답 있으면 막힘", false, S.validate(CL, partial).ok);
+var situPending = merge(answersAll("O"), {}); situPending["3"] = { occurred:true };   // 발생만 표시
+check("상황 '발생함' 판정 안 하면 막힘", false, S.validate(CL, situPending).ok);
+check("상황 미발생은 통과", true, S.validate(CL, answersAll("O")).ok);
+
+/* ---------- 진행률 ---------- */
+check("전부 응답 → 진행률 30/30", [30,30], (function(){ var p = S.progress(CL, answersAll("O")); return [p.done,p.total]; })());
+
+/* ---------- 전송용 행 ---------- */
+var rows = S.itemRows(CL, merge(answersAll("O"), situAll("X")));
+check("전송 행 수 = 30", 30, rows.length);
+check("1번 행: 배점6 획득6 감점0", [6,6,0], (function(){ var r = rows.find(function(x){ return x.no==="1"; }); return [r.max,r.got,r.penalty]; })());
+check("7번 행(상황 불이행): 감점 4", 4, rows.find(function(x){ return x.no==="7"; }).penalty);
+var rowsNone = S.itemRows(CL, answersAll("O"));
+check("상황 미발생 행 라벨 = 상황없음", "상황없음", rowsNone.find(function(x){ return x.no==="3"; }).label);
+var rowsNa = S.itemRows(CL, naOne);
+check("해당없음 행: 획득0 감점0", [0,0], (function(){ var r = rowsNa.find(function(x){ return x.no==="1"; }); return [r.got,r.penalty]; })());
+
+/* ---------- 결과 출력 ---------- */
+var pass = results.filter(function(r){ return r.pass; }).length;
+var sum = document.getElementById("sum");
+sum.className = "sum " + (pass === results.length ? "pass" : "fail");
+sum.textContent = pass === results.length
+  ? "✅ 전체 통과 — " + results.length + "개 테스트"
+  : "❌ 실패 " + (results.length - pass) + "건 / 전체 " + results.length + "개";
+
+document.getElementById("rows").innerHTML = results.map(function(r){
+  return '<tr class="'+(r.pass?"":"bad")+'"><td>'+r.name+'</td>'
+    + '<td class="'+(r.pass?"ok":"ng")+'">'+(r.pass?"통과":"실패")+'</td>'
+    + '<td class="exp">'+r.exp+'</td><td class="got">'+r.got+'</td></tr>';
+}).join("");
+</script>
+</body>
+</html>
